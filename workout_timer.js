@@ -14,6 +14,7 @@ const currentExerciseDisplay = document.getElementById('current-exercise');
 const currentSetDisplay = document.getElementById('current-set');
 const completionMessage = document.getElementById('completion-message');
 const noWorkoutsWarning = document.getElementById('no-workouts-warning');
+const workoutStateDisplay = document.getElementById('workout-state');
 
 // app state messages
 const workoutState = { workout: 'Workout', rest: 'Rest', allWorkoutsCompleted: 'All workouts completed.'}
@@ -70,6 +71,7 @@ function clearWorkouts() {
     completionMessage.classList.add('d-none'); // Hide the completion message
     currentSetDisplay.textContent = ''; // Clear the current set
     currentExerciseDisplay.textContent = ''; // Clear the current exercise
+    workoutStateDisplay.textContent = ''; // Clear the workout state
     startBtn.disabled = false; // Enable the start button
     pauseBtn.disabled = true; // Disable the pause button
 }
@@ -101,8 +103,7 @@ function startWorkoutTimer() {
     let currentTime = workoutListData[currentWorkoutIndex].interval;
     let isRestPeriod = false;
 
-    // Get the DOM elements for workout state and current exercise
-    const workoutStateDisplay = document.getElementById('workout-state');
+    // Get the DOM current exercise
     const currentExercise = workoutList.children[currentWorkoutIndex];
 
     currentExerciseDisplay.textContent = `Current Exercise: ${workoutListData[currentWorkoutIndex].exerciseName}`;
