@@ -60,12 +60,8 @@ function displayWorkout(workout) {
     workoutList.appendChild(li);
 }
 
-// Clear all workouts from the list
-function clearWorkouts() {
-    workoutList.innerHTML = '';
-    workoutListData = [];
-    currentWorkoutIndex = 0;
-    currentSet = 1;
+// Rest the display state
+function resetDisplay(){
     clearInterval(timer); // Clear the interval timer
     timerDisplay.textContent = '00:00'; // Reset the timer display
     completionMessage.classList.add('d-none'); // Hide the completion message
@@ -74,6 +70,15 @@ function clearWorkouts() {
     workoutStateDisplay.textContent = ''; // Clear the workout state
     startBtn.disabled = false; // Enable the start button
     pauseBtn.disabled = true; // Disable the pause button
+}
+
+// Clear all workouts from the list
+function clearWorkouts() {
+    workoutList.innerHTML = '';
+    workoutListData = [];
+    currentWorkoutIndex = 0;
+    currentSet = 1;
+    resetDisplay();
 }
 
 // Start the timer
@@ -139,13 +144,7 @@ function startWorkoutTimer() {
                 currentWorkoutIndex++;
 
                 if (currentWorkoutIndex >= workoutListData.length) {
-                    clearInterval(timer);
-                    currentExerciseDisplay.textContent = "";
-                    workoutStateDisplay.textContent = "";
-                    startBtn.disabled = false;
-                    pauseBtn.disabled = true;
-                    timerDisplay.textContent = '00:00';
-                    currentSetDisplay.textContent = '';
+                    resetDisplay();
                     completionMessage.classList.remove('d-none'); // Show the completion message
                     speak(workoutState.allWorkoutsCompleted); // Add text-to-speech for workout completion
                     return;
