@@ -1,178 +1,206 @@
-// Get DOM elements
-const restInput = document.getElementById('rest');
-const intervalInput = document.getElementById('interval');
-const setsInput = document.getElementById('sets');
-const exerciseNameInput = document.getElementById('exercise-name');
-const repsInput = document.getElementById('reps');
-const addWorkoutBtn = document.getElementById('add-workout');
-const workoutList = document.getElementById('workout-list');
-const timerDisplay = document.getElementById('timer-display');
-const startBtn = document.getElementById('start');
-const pauseBtn = document.getElementById('pause');
-const clearWorkoutsBtn = document.getElementById('clear-workouts');
-const currentExerciseDisplay = document.getElementById('current-exercise');
-const currentSetDisplay = document.getElementById('current-set');
-const completionMessage = document.getElementById('completion-message');
-const noWorkoutsWarning = document.getElementById('no-workouts-warning');
-const workoutStateDisplay = document.getElementById('workout-state');
+// DOM elements
+const elements = {
+    restInput: document.getElementById('rest'),
+    intervalInput: document.getElementById('interval'),
+    setsInput: document.getElementById('sets'),
+    exerciseNameInput: document.getElementById('exercise-name'),
+    repsInput: document.getElementById('reps'),
+    addWorkoutBtn: document.getElementById('add-workout'),
+    workoutList: document.getElementById('workout-list'),
+    timerDisplay: document.getElementById('timer-display'),
+    startBtn: document.getElementById('start'),
+    pauseBtn: document.getElementById('pause'),
+    clearWorkoutsBtn: document.getElementById('clear-workouts'),
+    currentExerciseDisplay: document.getElementById('current-exercise'),
+    currentSetDisplay: document.getElementById('current-set'),
+    completionMessage: document.getElementById('completion-message'),
+    noWorkoutsWarning: document.getElementById('no-workouts-warning'),
+    workoutStateDisplay: document.getElementById('workout-state'),
+};
 
-// app state messages
-const workoutState = { workout: 'Workout', rest: 'Rest', allWorkoutsCompleted: 'All workouts completed.'}
+// Constants
+const WORKOUT_STATES = {
+    WORKOUT: 'Workout',
+    REST: 'Rest',
+    COMPLETED: 'All workouts completed.',
+};
 
-// Initialize variables
-let workoutListData = [];
-let timer = null;
+// App state
+let state = {
+    workouts: [],
+    currentWorkoutIndex: 0,
+    currentSet: 1,
+    isRestPeriod: false,
+    timer: null,
+    currentTime: 0,
+    isPaused: false
+};
 
 // Event listeners
-addWorkoutBtn.addEventListener('click', addWorkout);
-clearWorkoutsBtn.addEventListener('click', clearWorkouts);
-startBtn.addEventListener('click', startTimer);
-pauseBtn.addEventListener('click', pauseTimer);
+elements.addWorkoutBtn.addEventListener('click', addWorkout);
+elements.clearWorkoutsBtn.addEventListener('click', clearWorkouts);
+elements.startBtn.addEventListener('click', startTimer);
+elements.pauseBtn.addEventListener('click', pauseTimer);
 
-// Add a new workout to the list
 function addWorkout() {
-    const exerciseName = exerciseNameInput.value.trim();
-    const reps = parseInt(repsInput.value);
-    const sets = parseInt(setsInput.value);
-    const interval = parseInt(intervalInput.value);
-    const rest = parseInt(restInput.value);
+    const workout = {
+        exerciseName: elements.exerciseNameInput.value.trim(),
+        reps: parseInt(elements.repsInput.value),
+        sets: parseInt(elements.setsInput.value),
+        interval: parseInt(elements.intervalInput.value),
+        rest: parseInt(elements.restInput.value),
+    };
 
-    if (exerciseName && reps && sets && interval, rest) {
-        const workout = {
-            exerciseName,
-            reps,
-            sets,
-            interval,
-            rest
-        };
-
-        workoutListData.push(workout);
+    if (isValidWorkout(workout)) {
+        state.workouts.push(workout);
         displayWorkout(workout);
-        exerciseNameInput.value = '';
+        elements.exerciseNameInput.value = '';
     }
 }
 
-// Display a workout in the list
+function isValidWorkout(workout) {
+    return workout.exerciseName && workout.reps && workout.sets && workout.interval && workout.rest;
+}
+
 function displayWorkout(workout) {
     const li = document.createElement('li');
     li.textContent = `${workout.exerciseName} (${workout.reps} reps) x ${workout.sets} sets - ${workout.interval}s interval - ${workout.rest}s rest`;
-    li.dataset.completed = false;
-    workoutList.appendChild(li);
+    li.dataset.completed = 'false';
+    elements.workoutList.appendChild(li);
 }
 
-// Rest the display state
-function resetDisplay(){
-    clearInterval(timer); // Clear the interval timer
-    timerDisplay.textContent = '00:00'; // Reset the timer display
-    completionMessage.classList.add('d-none'); // Hide the completion message
-    currentSetDisplay.textContent = ''; // Clear the current set
-    currentExerciseDisplay.textContent = ''; // Clear the current exercise
-    workoutStateDisplay.textContent = ''; // Clear the workout state
-    startBtn.disabled = false; // Enable the start button
-    pauseBtn.disabled = true; // Disable the pause button
+function resetDisplay() {
+    clearInterval(state.timer);
+    elements.timerDisplay.textContent = '00:00';
+    elements.completionMessage.classList.add('d-none');
+    elements.currentSetDisplay.textContent = '';
+    elements.currentExerciseDisplay.textContent = '';
+    elements.workoutStateDisplay.textContent = '';
+    elements.startBtn.disabled = false;
+    elements.pauseBtn.disabled = true;
 }
 
-// Clear all workouts from the list
 function clearWorkouts() {
-    workoutList.innerHTML = '';
-    workoutListData = [];
-    currentWorkoutIndex = 0;
-    currentSet = 1;
+    elements.workoutList.innerHTML = '';
+    state.workouts = [];
+    state.currentWorkoutIndex = 0;
+    state.currentSet = 1;
     resetDisplay();
 }
 
-// Start the timer
 function startTimer() {
-    if (workoutListData.length > 0) {
-        startBtn.disabled = true;
-        pauseBtn.disabled = false;
-        completionMessage.classList.add('d-none'); // Hide the completion message
-        noWorkoutsWarning.classList.add('d-none'); // Hide the no workouts warning message
-        startWorkoutTimer();
+    if (state.workouts.length > 0) {
+        if (state.isPaused) {
+            resumeTimer();
+        } else {
+            initializeNewWorkout();
+        }
+        elements.startBtn.disabled = true;
+        elements.pauseBtn.disabled = false;
+        elements.completionMessage.classList.add('d-none');
+        elements.noWorkoutsWarning.classList.add('d-none');
+        state.timer = setInterval(timerTick, 1000);
     } else {
-        noWorkoutsWarning.classList.remove('d-none');
+        elements.noWorkoutsWarning.classList.remove('d-none');
     }
 }
 
-// Pause the timer
+function initializeNewWorkout() {
+    state.currentWorkoutIndex = 0;
+    state.currentSet = 1;
+    state.isRestPeriod = false;
+    const currentWorkout = state.workouts[state.currentWorkoutIndex];
+    state.currentTime = currentWorkout.interval;
+    updateWorkoutState(WORKOUT_STATES.WORKOUT);
+}
+
+function resumeTimer() {
+    updateWorkoutState(state.isRestPeriod ? WORKOUT_STATES.REST : WORKOUT_STATES.WORKOUT);
+}
+
 function pauseTimer() {
-    startBtn.disabled = false;
-    pauseBtn.disabled = true;
-    clearInterval(timer);
+    elements.startBtn.disabled = false;
+    elements.pauseBtn.disabled = true;
+    clearInterval(state.timer);
+    state.isPaused = true;
 }
 
-// Start the workout timer
-function startWorkoutTimer() {
-    let currentWorkoutIndex = 0;
-    let currentSet = 1;
-    let currentTime = workoutListData[currentWorkoutIndex].interval;
-    let isRestPeriod = false;
+function updateWorkoutState(newState) {
+    elements.workoutStateDisplay.textContent = newState;
+    speak(newState);
+}
 
-    // Get the DOM current exercise
-    const currentExercise = workoutList.children[currentWorkoutIndex];
-
-    currentExerciseDisplay.textContent = `Current Exercise: ${workoutListData[currentWorkoutIndex].exerciseName}`;
-    speak(workoutState.workout)
-    workoutStateDisplay.textContent = workoutState.workout;
-
-    timer = setInterval(() => {
-        currentTime--;
-        if (currentTime < 0) {
-            nextStep();
-        } else {
-            timerDisplay.textContent = formatTime(currentTime);
-            currentSetDisplay.textContent = `Current Set: ${currentSet}`;
-            currentExerciseDisplay.textContent = `Current Exercise: ${workoutListData[currentWorkoutIndex].exerciseName}`;
-        }
-    }, 1000);
-
-    // Go to the next step in the workout
-    function nextStep() {
-        isRestPeriod = !isRestPeriod;
-
-        if (isRestPeriod) {
-            speak(workoutState.rest)
-            workoutStateDisplay.textContent = workoutState.rest;
-
-            if (currentSet < workoutListData[currentWorkoutIndex].sets) {
-                currentSet++;
-            } else {
-                currentSet = 1;
-                currentExercise.classList.add('completed');
-                currentExercise.dataset.completed = true;
-
-                currentWorkoutIndex++;
-
-                if (currentWorkoutIndex >= workoutListData.length) {
-                    resetDisplay();
-                    completionMessage.classList.remove('d-none'); // Show the completion message
-                    speak(workoutState.allWorkoutsCompleted); // Add text-to-speech for workout completion
-                    return;
-                }
-            }
-            currentTime = workoutListData[currentWorkoutIndex].rest;
-        } else {
-            speak(workoutState.workout)
-            workoutStateDisplay.textContent = workoutState.workout;
-            currentTime = workoutListData[currentWorkoutIndex].interval;
-        }
-
-        timerDisplay.textContent = formatTime(currentTime);
-        currentSetDisplay.textContent = `Current Set: ${currentSet}`;
-        currentExerciseDisplay.textContent = `Current Exercise: ${workoutListData[currentWorkoutIndex].exerciseName}`;
+function timerTick() {
+    state.currentTime--;
+    if (state.currentTime < 0) {
+        nextStep();
+    } else {
+        updateDisplay();
     }
 }
 
-// Format the time
+function nextStep() {
+    state.isRestPeriod = !state.isRestPeriod;
+    const currentWorkout = state.workouts[state.currentWorkoutIndex];
+
+    if (state.isRestPeriod) {
+        handleRestPeriod(currentWorkout);
+    } else {
+        handleWorkoutPeriod(currentWorkout);
+    }
+
+    updateDisplay();
+}
+
+function handleRestPeriod(currentWorkout) {
+    updateWorkoutState(WORKOUT_STATES.REST);
+
+    if (state.currentSet < currentWorkout.sets) {
+        state.currentSet++;
+    } else {
+        moveToNextWorkout();
+    }
+    state.currentTime = currentWorkout.rest;
+}
+
+function handleWorkoutPeriod(currentWorkout) {
+    updateWorkoutState(WORKOUT_STATES.WORKOUT);
+    state.currentTime = currentWorkout.interval;
+}
+
+function moveToNextWorkout() {
+    state.currentSet = 1;
+    const currentExercise = elements.workoutList.children[state.currentWorkoutIndex];
+    currentExercise.classList.add('completed');
+    currentExercise.dataset.completed = 'true';
+
+    state.currentWorkoutIndex++;
+
+    if (state.currentWorkoutIndex >= state.workouts.length) {
+        completeWorkout();
+    }
+}
+
+function completeWorkout() {
+    resetDisplay();
+    elements.completionMessage.classList.remove('d-none');
+    speak(WORKOUT_STATES.COMPLETED);
+}
+
+function updateDisplay() {
+    const currentWorkout = state.workouts[state.currentWorkoutIndex];
+    elements.timerDisplay.textContent = formatTime(state.currentTime);
+    elements.currentSetDisplay.textContent = `Current Set: ${state.currentSet}`;
+    elements.currentExerciseDisplay.textContent = `Current Exercise: ${currentWorkout.exerciseName}`;
+}
+
 function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
 }
 
-// Add text-to-speech
 function speak(text) {
-    const synth = window.speechSynthesis;
     const utterance = new SpeechSynthesisUtterance(text);
-    synth.speak(utterance);
+    window.speechSynthesis.speak(utterance);
 }

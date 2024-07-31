@@ -1,3 +1,130 @@
+/* Base styles */
+body {
+  font-family: 'Arial', sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f4f4f4;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+}
+
+/* Typography */
+h1 {
+  color: #007bff;
+  margin-bottom: 30px;
+}
+
 .highlighted-text {
-    color: #007bff;
+  color: #007bff;
+  font-weight: bold;
+}
+
+/* Form styles */
+.form-floating {
+  margin-bottom: 15px;
+}
+
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Button styles */
+.btn-group {
+  margin-top: 20px;
+}
+
+.btn {
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* Workout list styles */
+#workout-list {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+#workout-list li {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  margin-bottom: 10px;
+  padding: 10px 15px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+#workout-list li:hover {
+  background-color: #e9ecef;
+}
+
+#workout-list li.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Timer display styles */
+#timer-display {
+  font-size: 48px;
+  font-weight: bold;
+  color: #28a745;
+  margin-bottom: 20px;
+}
+
+/* Current workout info styles */
+#current-set,
+#current-exercise,
+#workout-state {
+  margin-bottom: 10px;
+}
+
+/* Alert styles */
+.alert {
+  margin-top: 20px;
+}
+
+/* Footer styles */
+footer {
+  margin-top: 30px;
+}
+
+footer a {
+  color: #6c757d;
+  transition: color 0.3s ease;
+}
+
+footer a:hover {
+  color: #007bff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container {
+      padding: 15px;
   }
+
+  h1 {
+      font-size: 24px;
+  }
+
+  #timer-display {
+      font-size: 36px;
+  }
+}
